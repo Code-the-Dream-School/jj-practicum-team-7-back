@@ -18,6 +18,7 @@
     "express": "^5.1.0",
     "express-favicon": "^2.0.4",
     "helmet": "^8.1.0",
+    "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
     "mongoose": "^8.17.1",
