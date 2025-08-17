@@ -5,7 +5,8 @@ const { StatusCodes } = require('http-status-codes');
 
 const generateToken = (userId, username) => {
   const secret = process.env.JWT_SECRET;
-  const token = jwt.sign({ userId, username }, secret, { expiresIn: '30d' });
+  const expiresIn = process.env.JWT_LIFETIME || '30d';
+  const token = jwt.sign({ userId, username }, secret, { expiresIn });
   return token;
 };
 

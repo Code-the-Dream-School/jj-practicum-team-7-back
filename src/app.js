@@ -5,7 +5,7 @@ const favicon = require('express-favicon');
 const logger = require('morgan');
 
 const mainRouter = require('./routes/mainRouter.js');
-const authRoutes = require('./routes/authRouter.js');
+const authRouter = require('./routes/authRouter.js');
 // middleware
 app.use(cors());
 app.use(express.json());
