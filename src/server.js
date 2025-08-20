@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 const start = async () => {
     try {
         await connectDB(process.env.MONGO_URI);
+        console.log("✅ Connected to MongoDB");
         const listener = () => console.log(`Listening on Port ${PORT}!`);
         app.listen(PORT, listener);
     } catch (error) {
