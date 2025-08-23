@@ -41,4 +41,19 @@ const createChallenge = async (req,res) => {
       .json({ message: 'Failed to create challenge' });
    }
 }
-module.exports = {createChallenge}
+
+const getChallenges = async (req, res) => {
+  try {
+    const challenges = await Challenge.find({
+      $or: [{ participant: req.user.id }, { invited: req.user.id }],
+    })
+      .populate('creator', 'username')
+      .populate('participant', 'username');
+    return res.status(StatusCodes.OK).json({ challenges });
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Failed to fetch challenges' });
+   }
+  }
+module.exports = {createChallenge, getChallenges}
