@@ -7,12 +7,9 @@ const ChallengeSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, `Let's name your challenge to get started!`],
-      minlength: [5, `That title's a bit short - try at least 5 characters`],
-      maxlength: [
-        50,
-        'Short and sweet titles work best - try under 50 characters!',
-      ],
+      required: [true, `Title is required`],
+      minlength: [5, `Title must be between 5 and 50 characters!`],
+      maxlength: [50, 'Title must be between 5 and 50 characters!'],
       trim: true,
     },
     category: {
