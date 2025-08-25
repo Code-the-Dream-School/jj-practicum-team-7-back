@@ -59,29 +59,31 @@ const getChallenges = async (req, res) => {
 
  const acceptChallenge = async (req,res)  => {
     try {
-      const challenge = await Challenge.findById(req.params.id)
-      if (!challenge){
-        throw new NotFoundError('Chaleenge not found')
+      const challenge = await Challenge.findById(req.params.id);
+      if (!challenge) {
+        throw new NotFoundError('Challenge not found');
       }
-      if (!challenge.invited.includes(req.user.id)){
-        throw new BadRequestError(`You're not invited to this challenge`)
+      if (!challenge.invited.includes(req.user.id)) {
+        throw new BadRequestError(`You're not invited to this challenge`);
       }
-      if(!challenge.participant.includes(req.user.id)){
-         throw new BadRequestError(`You're already in this challenge`);
-      }
-      if(challenge.participant.includes(req.user.id)){
+      if (challenge.participant.includes(req.user.id)) {
         throw new BadRequestError(`You're already in this challenge`);
       }
-      const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id,{
-        $push: { participant:req.user.id},
-        $pull: {invited: req.user.id},
-        $set:{status:'active'}
-      },
-      {new:true}
-    )
-    .populate('creator', 'username')
-    .populate('participant', 'username')
-    return res.status(StatusCodes.OK).json({challenge: updatedChallenge})
+      const updatedChallenge = await Challenge.findByIdAndUpdate(
+        req.params.id,
+        {
+          $push: { participant: req.user.id },
+          $pull: { invited: req.user.id },
+          $set: { status: 'active' },
+        },
+        { new: true }
+      )
+        .populate('creator', 'username')
+        .populate('participant', 'username');
+
+      // TODO: Create CheckIn record with startDate for user (waiting for Romanna's CheckIn model)
+
+      return res.status(StatusCodes.OK).json({ challenge: updatedChallenge });
     }
     catch (error){
         return res
@@ -89,4 +91,31 @@ const getChallenges = async (req, res) => {
           .json({ message: 'Failed to accept challenge' });
     }
  }
-module.exports = {createChallenge, getChallenges, acceptChallenge}
+
+ const declineChallenge = async (req,res) => {
+    try {
+      const challenge = await Challenge.findById(req.params.id);
+      if (!challenge) {
+        throw new NotFoundError('Challenge not found');
+      }
+      if (!challenge.invited.includes(req.user.id)) {
+        throw new BadRequestError(`You're not invited to this challenge`);
+      }
+       if (challenge.participant.includes(req.user.id)) {
+         throw new BadRequestError(`You're already in this challenge`);
+       }
+      const updatedChallenge = await Challenge.findByIdAndUpdate(
+        req.params.id,
+        { $pull: { invited: req.user.id } },
+        { new: true }
+      )
+        .populate('creator', 'username')
+        .populate('participant', 'username');
+
+      return res.status(StatusCodes.OK).json({ challenge: updatedChallenge , message: 'Challenge declined'});
+    }
+    catch (error){
+        throw error
+    }
+ }
+module.exports = {createChallenge, getChallenges, acceptChallenge, declineChallenge}
