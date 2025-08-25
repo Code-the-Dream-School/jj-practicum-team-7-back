@@ -2,7 +2,7 @@ const Challenge = require('../models/Challenge')
 const { categories} = require ('../models/Challenge')
 
 const { StatusCodes } = require('http-status-codes')
-const { BadRequestError } = require('../errors');
+const { BadRequestError, NotFoundError} = require('../errors');
 
 const createChallenge = async (req,res) => {
     const { title, category, duration, invited } = req.body;
@@ -56,4 +56,37 @@ const getChallenges = async (req, res) => {
       .json({ message: 'Failed to fetch challenges' });
    }
   }
-module.exports = {createChallenge, getChallenges}
+
+ const acceptChallenge = async (req,res)  => {
+    try {
+      const challenge = await Challenge.findById(req.params.id)
+      if (!challenge){
+        throw new NotFoundError('Chaleenge not found')
+      }
+      if (!challenge.invited.includes(req.user.id)){
+        throw new BadRequestError(`You're not invited to this challenge`)
+      }
+      if(!challenge.participant.includes(req.user.id)){
+         throw new BadRequestError(`You're already in this challenge`);
+      }
+      if(challenge.participant.includes(req.user.id)){
+        throw new BadRequestError(`You're already in this challenge`);
+      }
+      const updatedChallenge = await Challenge.findByIdAndUpdate(req.params.id,{
+        $push: { participant:req.user.id},
+        $pull: {invited: req.user.id},
+        $set:{status:'active'}
+      },
+      {new:true}
+    )
+    .populate('creator', 'username')
+    .populate('participant', 'username')
+    return res.status(StatusCodes.OK).json({challenge: updatedChallenge})
+    }
+    catch (error){
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Failed to accept challenge' });
+    }
+ }
+module.exports = {createChallenge, getChallenges, acceptChallenge}
