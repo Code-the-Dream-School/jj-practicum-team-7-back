@@ -50,4 +50,4 @@ const ChallengeSchema = new mongoose.Schema(
 // Ensure title is unique per creator
 ChallengeSchema.index({ title: 1, creator: 1 }, { unique: true });
 
-module.exports = mongoose.model('Challenge', ChallengeSchema);
+module.exports = {Challenge: mongoose.model('Challenge', ChallengeSchema), categories}
