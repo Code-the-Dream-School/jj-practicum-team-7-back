@@ -6,6 +6,7 @@ const logger = require('morgan');
 
 const mainRouter = require('./routes/mainRouter.js');
 const authRouter = require('./routes/authRouter.js');
+const challengesRouter = require('./routes/challengesRouter.js')
 // middleware
 app.use(cors());
 app.use(express.json());
@@ -17,6 +18,6 @@ app.use(favicon(__dirname + '/public/favicon.ico'));
 // routes
 app.use('/api/v1', mainRouter);
 app.use('/api/v1/auth', authRouter);      
-
+app.use('/api/v1/challenges', challengesRouter )
 
 module.exports = app;
