@@ -81,6 +81,36 @@ const getChallenges = async (req, res) => {
   }
 };
 
+const getChallengeById = async (req, res) => {
+  try {
+    console.log('Fetching challenge with ID:', req.params.id);
+    const challenge = await Challenge.findById(req.params.id)
+      .populate('creator', 'username')
+      .populate('participant', 'username')
+      .populate('invited', 'username');
+      if(!challenge){
+        throw new NotFoundError('Challenge not found')
+      }
+      const userId = req.user.id;
+      const isCreator = challenge.creator._id.toString() === userId;
+      const isParticipant = challenge.participant.some(
+        (p) => p._id.toString() === userId
+      );
+      const isInvited = challenge.invited.some(
+        (i) => i._id.toString() === userId
+      );
+
+      if (!isCreator && !isParticipant && !isInvited) {
+        throw new BadRequestError('You do not have access to this challenge');
+      }
+    return res.status(StatusCodes.OK).json({ challenge });
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Failed to fetch challenge' });
+  }
+};
+
 const acceptChallenge = async (req, res) => {
   try {
     const challenge = await Challenge.findById(req.params.id);
@@ -145,6 +175,7 @@ const declineChallenge = async (req, res) => {
 module.exports = {
   createChallenge,
   getChallenges,
+  getChallengeById,
   acceptChallenge,
   declineChallenge,
 };
