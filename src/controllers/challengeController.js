@@ -47,7 +47,7 @@ const createChallenge = async (req, res) => {
       duration,
       creator: userId,
       participant: [userId],
-      invited: invited.map(id => mongoose.Types.ObjectId(id)),
+      invited,
     });
     return res.status(StatusCodes.CREATED).json({ challenge });
   } catch (error) {
@@ -117,28 +117,36 @@ const acceptChallenge = async (req, res) => {
     if (!challenge) {
       throw new NotFoundError('Challenge not found');
     }
-    if (!challenge.invited.includes(req.user.id)) {
+    const userId = req.user.id;
+    const isInvited = challenge.invited.some((id) => id.toString() === userId);
+    const isParticipant = challenge.participant.some(
+      (id) => id.toString() === userId
+    );
+
+    if (!isInvited) {
       throw new BadRequestError(`You're not invited to this challenge`);
     }
-    if (challenge.participant.includes(req.user.id)) {
+    if (isParticipant) {
       throw new BadRequestError(`You're already in this challenge`);
     }
     const updatedChallenge = await Challenge.findByIdAndUpdate(
       req.params.id,
       {
-        $push: { participant: req.user.id },
-        $pull: { invited: req.user.id },
+        $push: { participant: userId},
+        $pull: { invited: userId },
         $set: { status: 'active' },
       },
       { new: true }
     )
       .populate('creator', 'username')
-      .populate('participant', 'username');
+      .populate('participant', 'username')
+       .populate('invited', 'username');
 
     // TODO: Create CheckIn record with startDate for user (waiting for Romanna's CheckIn model)
 
     return res.status(StatusCodes.OK).json({ challenge: updatedChallenge });
   } catch (error) {
+    console.error('Error in acceptChallenge:', error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: 'Failed to accept challenge' });
@@ -151,25 +159,35 @@ const declineChallenge = async (req, res) => {
     if (!challenge) {
       throw new NotFoundError('Challenge not found');
     }
-    if (!challenge.invited.includes(req.user.id)) {
-      throw new BadRequestError(`You're not invited to this challenge`);
-    }
-    if (challenge.participant.includes(req.user.id)) {
-      throw new BadRequestError(`You're already in this challenge`);
-    }
+     const userId = req.user.id;
+     const isInvited = challenge.invited.some((id) => id.toString() === userId);
+     const isParticipant = challenge.participant.some(
+       (id) => id.toString() === userId
+     );
+
+     if (!isInvited) {
+       throw new BadRequestError(`You're not invited to this challenge`);
+     }
+     if (isParticipant) {
+       throw new BadRequestError(`You're already in this challenge`);
+     }
     const updatedChallenge = await Challenge.findByIdAndUpdate(
       req.params.id,
-      { $pull: { invited: req.user.id } },
+      { $pull: { invited: userId } },
       { new: true }
     )
       .populate('creator', 'username')
-      .populate('participant', 'username');
+      .populate('participant', 'username')
+      .populate('invited', 'username');
 
     return res
       .status(StatusCodes.OK)
       .json({ challenge: updatedChallenge, message: 'Challenge declined' });
   } catch (error) {
-    throw error;
+     console.error('Error in declineChallenge:', error);
+   return res
+     .status(StatusCodes.INTERNAL_SERVER_ERROR)
+     .json({ message: 'Failed to decline challenge' });
   }
 };
 module.exports = {
