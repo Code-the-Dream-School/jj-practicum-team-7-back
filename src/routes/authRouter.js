@@ -24,7 +24,7 @@ router.get(
 
     // Redirect to frontend OAuth success page
     res.redirect(
-      `${process.env.REACT_APP_FRONTEND_URL}/oauth-success?token=${token}&username=${encodeURIComponent(
+      `${process.env.VITE_FRONTEND_URL}/oauth-success?token=${token}&username=${encodeURIComponent(
         user.username
       )}&email=${encodeURIComponent(user.email)}`
     );
