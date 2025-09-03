@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const { Challenge, categories } = require('../models/Challenge');
 const User = require('../models/User');
+const CheckIn = require('../models/CheckIn');
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+dayjs.extend(utc);
 
 const { StatusCodes } = require('http-status-codes');
 const { BadRequestError, NotFoundError } = require('../errors');
@@ -88,21 +92,43 @@ const getChallengeById = async (req, res) => {
       .populate('creator', 'username')
       .populate('participant', 'username')
       .populate('invited', 'username');
-      if(!challenge){
-        throw new NotFoundError('Challenge not found')
-      }
-      const userId = req.user.id;
-      const isCreator = challenge.creator._id.toString() === userId;
-      const isParticipant = challenge.participant.some(
-        (p) => p._id.toString() === userId
-      );
-      const isInvited = challenge.invited.some(
-        (i) => i._id.toString() === userId
-      );
+    if (!challenge) {
+      throw new NotFoundError('Challenge not found');
+    }
+    const userId = req.user.id;
+    const isCreator = challenge.creator._id.toString() === userId;
+    const isParticipant = challenge.participant.some(
+      (p) => p._id.toString() === userId
+    );
+    const isInvited = challenge.invited.some(
+      (i) => i._id.toString() === userId
+    );
 
-      if (!isCreator && !isParticipant && !isInvited) {
-        throw new BadRequestError('You do not have access to this challenge');
+    if (!isCreator && !isParticipant && !isInvited) {
+      throw new BadRequestError('You do not have access to this challenge');
+    }
+
+    //Check for completion/failure based on check-ins
+    if (isParticipant) {
+      const checkIn = await CheckIn.findOne({
+        challenge: challenge._id,
+        user: userId,
+      });
+
+      if (checkIn && checkIn.startDate) {
+        const today = dayjs().utc().startOf('day');
+        const startDate = dayjs(checkIn.startDate).utc().startOf('day');
+        const challengeEnd = startDate.add(challenge.duration - 1, 'day');
+
+        if (today.isAfter(challengeEnd) && challenge.status === 'active') {
+          const allDaysChecked =
+            checkIn.checkedDays.length >= challenge.duration;
+          challenge.status = allDaysChecked ? 'completed' : 'failed';
+          await challenge.save();
+        }
       }
+    }
+
     return res.status(StatusCodes.OK).json({ challenge });
   } catch (error) {
     return res
@@ -132,7 +158,7 @@ const acceptChallenge = async (req, res) => {
     const updatedChallenge = await Challenge.findByIdAndUpdate(
       req.params.id,
       {
-        $push: { participant: userId},
+        $push: { participant: userId },
         $pull: { invited: userId },
         $set: { status: 'active' },
       },
@@ -140,9 +166,7 @@ const acceptChallenge = async (req, res) => {
     )
       .populate('creator', 'username')
       .populate('participant', 'username')
-       .populate('invited', 'username');
-
-    // TODO: Create CheckIn record with startDate for user (waiting for Romanna's CheckIn model)
+      .populate('invited', 'username');
 
     return res.status(StatusCodes.OK).json({ challenge: updatedChallenge });
   } catch (error) {
@@ -159,18 +183,18 @@ const declineChallenge = async (req, res) => {
     if (!challenge) {
       throw new NotFoundError('Challenge not found');
     }
-     const userId = req.user.id;
-     const isInvited = challenge.invited.some((id) => id.toString() === userId);
-     const isParticipant = challenge.participant.some(
-       (id) => id.toString() === userId
-     );
+    const userId = req.user.id;
+    const isInvited = challenge.invited.some((id) => id.toString() === userId);
+    const isParticipant = challenge.participant.some(
+      (id) => id.toString() === userId
+    );
 
-     if (!isInvited) {
-       throw new BadRequestError(`You're not invited to this challenge`);
-     }
-     if (isParticipant) {
-       throw new BadRequestError(`You're already in this challenge`);
-     }
+    if (!isInvited) {
+      throw new BadRequestError(`You're not invited to this challenge`);
+    }
+    if (isParticipant) {
+      throw new BadRequestError(`You're already in this challenge`);
+    }
     const updatedChallenge = await Challenge.findByIdAndUpdate(
       req.params.id,
       { $pull: { invited: userId } },
@@ -184,10 +208,10 @@ const declineChallenge = async (req, res) => {
       .status(StatusCodes.OK)
       .json({ challenge: updatedChallenge, message: 'Challenge declined' });
   } catch (error) {
-     console.error('Error in declineChallenge:', error);
-   return res
-     .status(StatusCodes.INTERNAL_SERVER_ERROR)
-     .json({ message: 'Failed to decline challenge' });
+    console.error('Error in declineChallenge:', error);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Failed to decline challenge' });
   }
 };
 module.exports = {
