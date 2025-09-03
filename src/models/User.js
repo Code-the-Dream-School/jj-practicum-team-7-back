@@ -32,6 +32,14 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "UTC",
     },
+    provider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+    googleId: {
+      type: String, // store Google ID if signed up with Google
+    },
   },
   { timestamps: true }
 );
