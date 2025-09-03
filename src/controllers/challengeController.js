@@ -3,7 +3,7 @@ const { Challenge, categories } = require('../models/Challenge');
 const User = require('../models/User');
 
 const { StatusCodes } = require('http-status-codes');
-const { BadRequestError, NotFoundError } = require('../errors');
+const { BadRequestError, NotFoundError, ForbiddenError } = require('../errors');
 
 const createChallenge = async (req, res) => {
   const { title, category, duration, invited = [] } = req.body;
@@ -101,7 +101,7 @@ const getChallengeById = async (req, res) => {
       );
 
       if (!isCreator && !isParticipant && !isInvited) {
-        throw new BadRequestError('You do not have access to this challenge');
+        throw new ForbiddenError('You do not have access to this challenge');
       }
     return res.status(StatusCodes.OK).json({ challenge });
   } catch (error) {
