@@ -137,11 +137,17 @@ const getCheckIn = async (req, res) => {
 
     // pending => only today’s day (if within duration and not already checked)
     let pendingDay = null;
-    const isChallengeActive = currentDay <= challenge.duration;
+    const isChallengeActive = currentDay < challenge.duration;
     const isTodayChecked = checkedDays.includes(currentDay);
 
     if (isChallengeActive && !isTodayChecked) {
       pendingDay = currentDay;
+    }
+
+    // if challenge ended, and today wasn't checked, mark as missed
+    if (currentDay === challenge.duration && !isTodayChecked) {
+      missedDays.push(currentDay);
+      pendingDay = null;
     }
 
     res.status(200).json({
