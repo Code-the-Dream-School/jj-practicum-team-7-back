@@ -65,9 +65,12 @@ const submitCheckIn = async (req, res) => {
       throw new BadRequestError('Already checked in for today');
     }
 
-    // add this day to checkedDays
-    checkIn.checkedDays.push(dayNumber);
-    await checkIn.save();
+    // atomic update to avoid duplicates
+    checkIn = await CheckIn.findByIdAndUpdate(
+      checkIn._id,
+      { $addToSet: { checkedDays: dayNumber } },
+      { new: true }
+    );
 
     res.status(StatusCodes.OK).json(checkIn);
   } catch (error) {
