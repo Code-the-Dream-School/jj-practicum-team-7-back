@@ -72,6 +72,8 @@ const submitCheckIn = async (req, res) => {
       { new: true }
     );
 
+    checkIn.checkedDays.sort((a, b) => a - b);
+
     res.status(StatusCodes.OK).json(checkIn);
   } catch (error) {
     console.error('Error in submitCheckIn:', error);
