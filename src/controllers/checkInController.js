@@ -55,20 +55,20 @@ const submitCheckIn = async (req, res) => {
     // calculate today’s day number
     const today = dayjs().utc().startOf('day');
     const startDate = dayjs(checkIn.startDate).utc().startOf('day');
-    const dayNumber = today.diff(startDate, 'day') + 1; // +1 because first day = 1
+    const currentDay = today.diff(startDate, 'day') + 1; // +1 because first day = 1
 
-    if (dayNumber > challenge.duration) {
+    if (currentDay > challenge.duration) {
       throw new BadRequestError('Challenge duration is over');
     }
 
-    if (checkIn.checkedDays.includes(dayNumber)) {
+    if (checkIn.checkedDays.includes(currentDay)) {
       throw new BadRequestError('Already checked in for today');
     }
 
     // atomic update to avoid duplicates
     checkIn = await CheckIn.findByIdAndUpdate(
       checkIn._id,
-      { $addToSet: { checkedDays: dayNumber } },
+      { $addToSet: { checkedDays: currentDay } },
       { new: true }
     );
 
