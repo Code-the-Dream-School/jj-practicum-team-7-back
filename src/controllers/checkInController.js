@@ -129,6 +129,14 @@ const getCheckIn = async (req, res) => {
       currentDay = challenge.duration;
     }
 
+    if (currentDay >= challenge.duration && challenge.status === 'active') {
+      const allDaysChecked = checkIn
+        ? checkIn.checkedDays.length >= challenge.duration
+        : false;
+      challenge.status = allDaysChecked ? 'completed' : 'failed';
+      await challenge.save();
+    }
+
     // checked days
     const checkedDays = checkIn.checkedDays;
 
