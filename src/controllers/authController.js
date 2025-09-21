@@ -9,6 +9,28 @@ const generateToken = (userId, username) => {
   const token = jwt.sign({ userId, username }, secret, { expiresIn });
   return token;
 };
+// Check if user is authenticated
+const checkAuth = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      throw new UnauthenticatedError('No token provided');
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select(
+      'username email timezone'
+    );
+    if (!user) {
+      throw new UnauthenticatedError('User not found');
+    }
+    res.status(StatusCodes.OK).json({ user });
+  } catch (error) {
+    console.error('Check auth error:', error);
+    const status = error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
+    const message = error.message || 'Invalid token';
+    res.status(status).json({ message });
+  }
+};
 
 //Register a new user
 const registerUser = async (req, res) => {
@@ -32,7 +54,12 @@ const registerUser = async (req, res) => {
     }
 
     // create user
-    const user = await User.create({ username, email:emailNormalized, password, timezone });
+    const user = await User.create({
+      username,
+      email: emailNormalized,
+      password,
+      timezone,
+    });
 
     // generate a token for new user
     const token = generateToken(user._id, user.username);
@@ -56,9 +83,11 @@ const loginUser = async (req, res) => {
     if (!email || !password) {
       throw new BadRequestError('Please provide email and password');
     }
-const emailNormalized = String(email).toLowerCase().trim();
+    const emailNormalized = String(email).toLowerCase().trim();
 
-    const user = await User.findOne({email: emailNormalized}).select('+password');
+    const user = await User.findOne({ email: emailNormalized }).select(
+      '+password'
+    );
     if (!user) {
       throw new UnauthenticatedError('Invalid credentials');
     }
@@ -85,15 +114,32 @@ const emailNormalized = String(email).toLowerCase().trim();
   }
 };
 
-//Logout
+// Logout
 const logoutUser = async (req, res) => {
   try {
+    if (!req.user) {
+      throw new UnauthenticatedError('No user authenticated');
+    }
+    if (req.session) {
+      req.logout((err) => {
+        if (err) {
+          console.error('Passport logout error:', err);
+          throw new Error('Logout failed');
+        }
+      });
+    }
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
     res.status(StatusCodes.OK).json({ message: 'Logout successful' });
   } catch (error) {
     console.error('Error during logout:', error);
     res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: 'Logout failed' });
+      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message || 'Logout failed' });
   }
 };
-module.exports = { registerUser, loginUser, logoutUser };
+module.exports = { registerUser, loginUser, logoutUser, checkAuth };
