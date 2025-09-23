@@ -11,25 +11,7 @@ const generateToken = (userId, username) => {
 };
 // Check if user is authenticated
 const checkAuth = async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      throw new UnauthenticatedError('No token provided');
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId).select(
-      'username email timezone'
-    );
-    if (!user) {
-      throw new UnauthenticatedError('User not found');
-    }
-    res.status(StatusCodes.OK).json({ user });
-  } catch (error) {
-    console.error('Check auth error:', error);
-    const status = error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
-    const message = error.message || 'Invalid token';
-    res.status(status).json({ message });
-  }
+  res.status(StatusCodes.OK).json({ user: req.user });
 };
 
 //Register a new user
@@ -117,29 +99,13 @@ const loginUser = async (req, res) => {
 // Logout
 const logoutUser = async (req, res) => {
   try {
-    if (!req.user) {
-      throw new UnauthenticatedError('No user authenticated');
-    }
-    if (req.session) {
-      req.logout((err) => {
-        if (err) {
-          console.error('Passport logout error:', err);
-          throw new Error('Logout failed');
-        }
-      });
-    }
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-    });
-
+    // No session or cookie handling needed for JWT-based auth
     res.status(StatusCodes.OK).json({ message: 'Logout successful' });
   } catch (error) {
     console.error('Error during logout:', error);
     res
-      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: error.message || 'Logout failed' });
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Logout failed' });
   }
 };
 module.exports = { registerUser, loginUser, logoutUser, checkAuth };
