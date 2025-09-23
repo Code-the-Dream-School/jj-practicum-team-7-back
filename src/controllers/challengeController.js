@@ -214,10 +214,60 @@ const declineChallenge = async (req, res) => {
       .json({ message: 'Failed to decline challenge' });
   }
 };
+
+const deleteChallenge = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const challenge = await Challenge.findById(id);
+    if (!challenge) {
+      throw new NotFoundError('Challenge not found');
+    }
+
+    const isParticipant = challenge.participant.some(
+      (p) => p.toString() === userId
+    );
+
+    if (!isParticipant) {
+      throw new ForbiddenError('You are not a participant in this challenge');
+    }
+
+    // Remove user from participants
+    challenge.participant = challenge.participant.filter(
+      (p) => p.toString() !== userId
+    );
+
+    // Remove user’s check-ins for this challenge
+    await CheckIn.deleteMany({ challenge: id, user: userId });
+
+    if (challenge.participant.length === 0) {
+      // No participants left -> delete challenge
+      await Challenge.findByIdAndDelete(id);
+      return res
+        .status(StatusCodes.OK)
+        .json({ message: 'Challenge deleted completely' });
+    } else {
+      // Save updated challenge (others can still see it)
+      await challenge.save();
+      return res.status(StatusCodes.OK).json({
+        message: 'You left the challenge',
+        challenge,
+      });
+    }
+  } catch (error) {
+    console.error('Error in deleteChallenge:', error);
+    return res
+      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message || 'Failed to delete challenge' });
+  }
+};
+
 module.exports = {
   createChallenge,
   getChallenges,
   getChallengeById,
   acceptChallenge,
   declineChallenge,
+  deleteChallenge,
 };
