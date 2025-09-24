@@ -96,7 +96,6 @@ const loginUser = async (req, res) => {
     res.status(status).json({ message: message });
   }
 };
-
 // Logout
 const logoutUser = async (req, res) => {
   try {
