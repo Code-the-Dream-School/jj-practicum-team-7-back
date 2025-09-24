@@ -10,6 +10,11 @@ const generateToken = (userId, username) => {
   return token;
 };
 
+// Check if user is authenticated
+const checkAuth = async (req, res) => {
+  res.status(StatusCodes.OK).json({ user: req.user });
+};
+
 //Register a new user
 const registerUser = async (req, res) => {
   try {
@@ -32,7 +37,12 @@ const registerUser = async (req, res) => {
     }
 
     // create user
-    const user = await User.create({ username, email:emailNormalized, password, timezone });
+    const user = await User.create({
+      username,
+      email: emailNormalized,
+      password,
+      timezone,
+    });
 
     // generate a token for new user
     const token = generateToken(user._id, user.username);
@@ -56,9 +66,11 @@ const loginUser = async (req, res) => {
     if (!email || !password) {
       throw new BadRequestError('Please provide email and password');
     }
-const emailNormalized = String(email).toLowerCase().trim();
+    const emailNormalized = String(email).toLowerCase().trim();
 
-    const user = await User.findOne({email: emailNormalized}).select('+password');
+    const user = await User.findOne({ email: emailNormalized }).select(
+      '+password'
+    );
     if (!user) {
       throw new UnauthenticatedError('Invalid credentials');
     }
@@ -71,6 +83,7 @@ const emailNormalized = String(email).toLowerCase().trim();
 
     res.status(StatusCodes.OK).json({
       user: {
+        _id: user._id,
         username: user.username,
         email: user.email,
         timezone: user.timezone,
@@ -85,9 +98,10 @@ const emailNormalized = String(email).toLowerCase().trim();
   }
 };
 
-//Logout
+// Logout
 const logoutUser = async (req, res) => {
   try {
+    // No session or cookie handling needed for JWT-based auth
     res.status(StatusCodes.OK).json({ message: 'Logout successful' });
   } catch (error) {
     console.error('Error during logout:', error);
@@ -96,4 +110,5 @@ const logoutUser = async (req, res) => {
       .json({ message: 'Logout failed' });
   }
 };
-module.exports = { registerUser, loginUser, logoutUser };
+
+module.exports = { registerUser, loginUser, logoutUser, checkAuth };

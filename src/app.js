@@ -1,11 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const cors = require('cors')
+const cors = require('cors');
 const favicon = require('express-favicon');
 const logger = require('morgan');
 const passport = require('./config/passport');
-const path = require('path')
+const path = require('path');
 
 const mainRouter = require('./routes/mainRouter.js');
 const authRouter = require('./routes/authRouter.js');
@@ -14,11 +14,16 @@ const userRouter = require ('./routes/userRouter.js')
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.VITE_FRONTEND_URL,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(logger('dev'));
-app.use(express.static('public'))
+app.use(express.static('public'));
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(passport.initialize());
 
