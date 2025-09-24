@@ -11,6 +11,7 @@ const mainRouter = require('./routes/mainRouter.js');
 const authRouter = require('./routes/authRouter.js');
 const challengesRouter = require('./routes/challengesRouter.js')
 const userRouter = require ('./routes/userRouter.js')
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
 
 // middleware
 app.use(cors());
@@ -26,5 +27,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/challenges', challengesRouter);
 app.use('/api/v1', mainRouter);
 app.use('/api/v1/users', userRouter)
+app.use('/api/v1/leaderboard', leaderboardRoutes); //global leaderboard
+app.use('/api/v1/challenges', leaderboardRoutes); // challenge leaderboard
 
 module.exports = app;
