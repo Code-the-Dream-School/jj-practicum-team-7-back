@@ -9,6 +9,7 @@ const generateToken = (userId, username) => {
   const token = jwt.sign({ userId, username }, secret, { expiresIn });
   return token;
 };
+
 // Check if user is authenticated
 const checkAuth = async (req, res) => {
   res.status(StatusCodes.OK).json({ user: req.user });
@@ -96,6 +97,7 @@ const loginUser = async (req, res) => {
     res.status(status).json({ message: message });
   }
 };
+
 // Logout
 const logoutUser = async (req, res) => {
   try {
@@ -108,4 +110,5 @@ const logoutUser = async (req, res) => {
       .json({ message: 'Logout failed' });
   }
 };
+
 module.exports = { registerUser, loginUser, logoutUser, checkAuth };
