@@ -52,7 +52,7 @@ const registerUser = async (req, res) => {
     // generate a token for new user
     const token = generateToken(user._id, user.username);
     res.status(StatusCodes.CREATED).json({
-      user: { username: user.username, email: user.email },
+      user: { _id: user._id, username: user.username, email: user.email },
       token,
     });
   } catch (error) {
