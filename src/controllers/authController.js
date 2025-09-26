@@ -12,7 +12,12 @@ const generateToken = (userId, username) => {
 
 // Check if user is authenticated
 const checkAuth = async (req, res) => {
-  res.status(StatusCodes.OK).json({ user: req.user });
+  res.status(StatusCodes.OK).json({user: {
+      _id: req.user.id,
+      username: req.user.username,
+      email: req.user.email,
+      timezone: req.user.timezone,
+ }});
 };
 
 //Register a new user
@@ -88,6 +93,7 @@ const loginUser = async (req, res) => {
         email: user.email,
         timezone: user.timezone,
       },
+
       token,
     });
   } catch (error) {
