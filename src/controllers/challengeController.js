@@ -214,10 +214,111 @@ const declineChallenge = async (req, res) => {
       .json({ message: 'Failed to decline challenge' });
   }
 };
+
+const deleteChallenge = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const challenge = await Challenge.findById(id);
+    if (!challenge) {
+      throw new NotFoundError('Challenge not found');
+    }
+
+    const isParticipant = challenge.participant.some(
+      (p) => p.toString() === userId
+    );
+
+    if (!isParticipant) {
+      throw new ForbiddenError('You are not a participant in this challenge');
+    }
+
+    // Remove user from participants
+    challenge.participant = challenge.participant.filter(
+      (p) => p.toString() !== userId
+    );
+
+    // Remove user’s check-ins for this challenge
+    await CheckIn.deleteMany({ challenge: id, user: userId });
+
+    if (challenge.participant.length === 0) {
+      // No participants left -> delete challenge
+      await Challenge.findByIdAndDelete(id);
+      return res
+        .status(StatusCodes.OK)
+        .json({ message: 'Challenge deleted completely' });
+    } else {
+      // Save updated challenge (others can still see it)
+      await challenge.save();
+      return res.status(StatusCodes.OK).json({
+        message: 'You left the challenge',
+        challenge,
+      });
+    }
+  } catch (error) {
+    console.error('Error in deleteChallenge:', error);
+    return res
+      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message || 'Failed to delete challenge' });
+  }
+};
+
+const updateChallenge = async (req, res) => {
+  try {
+    const { id } = req.params; // challenge we want to update
+    const userId = req.user.id; // logged in user
+    const { title, invited } = req.body;
+
+    const challenge = await Challenge.findById(id);
+    if (!challenge) {
+      throw new NotFoundError('Challenge not found');
+    }
+
+    // Ensure only creator can update
+    if (challenge.creator.toString() !== userId) {
+      throw new ForbiddenError('Only the creator can update this challenge');
+    }
+
+    // Update title if provided
+    if (title) {
+      if (title.length < 5 || title.length > 50) {
+        throw new BadRequestError('Title must be 5–50 characters');
+      }
+      challenge.title = title;
+    }
+
+    // Update invited list if provided
+    if (Array.isArray(invited)) {
+      const newInvites = invited.filter(
+        (uid) =>
+          !challenge.participant.some((p) => p.toString() === uid) &&
+          !challenge.invited.some((i) => i.toString() === uid)
+      );
+      challenge.invited.push(...newInvites);
+    }
+
+    await challenge.save();
+
+    const updated = await Challenge.findById(id)
+      .populate('creator', 'username')
+      .populate('participant', 'username')
+      .populate('invited', 'username');
+
+    return res.status(StatusCodes.OK).json({ challenge: updated });
+  } catch (error) {
+    console.error('Error in updateChallenge:', error);
+    return res
+      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message || 'Failed to update challenge' });
+  }
+};
+
 module.exports = {
   createChallenge,
   getChallenges,
   getChallengeById,
   acceptChallenge,
   declineChallenge,
+  deleteChallenge,
+  updateChallenge,
 };

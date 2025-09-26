@@ -11,7 +11,9 @@ router
   .get('/', auth, challengeController.getChallenges)
   .get('/:id', auth, challengeController.getChallengeById)
   .patch('/:id/accept', auth, challengeController.acceptChallenge)
-  .patch('/:id/decline', auth, challengeController.declineChallenge);
+  .patch('/:id/decline', auth, challengeController.declineChallenge)
+  .delete('/:id', auth, challengeController.deleteChallenge)
+  .patch('/:id', auth, challengeController.updateChallenge);
 
 // Mount check-ins routes under /challenges/:id/checkins
 router.use('/:id/checkins', checkInsRouter);
