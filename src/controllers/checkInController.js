@@ -74,6 +74,13 @@ const submitCheckIn = async (req, res) => {
 
     checkIn.checkedDays.sort((a, b) => a - b);
 
+    // update challenge status if today is last day
+    if (currentDay === challenge.duration) {
+      const allDaysChecked = checkIn.checkedDays.length >= challenge.duration;
+      challenge.status = allDaysChecked ? 'completed' : 'failed';
+      await challenge.save();
+    }
+
     res.status(StatusCodes.OK).json(checkIn);
   } catch (error) {
     console.error('Error in submitCheckIn:', error);
