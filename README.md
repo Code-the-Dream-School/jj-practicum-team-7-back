@@ -63,7 +63,6 @@ Our back-end is powered by a robust set of tools and libraries, ensuring a scala
 
 - **Responsive Interface**: Enjoy a smooth experience across desktop and mobile devices.
 
-
 ## Quick Start
 
 ### Setup
@@ -72,6 +71,14 @@ Our back-end is powered by a robust set of tools and libraries, ensuring a scala
 2. **Install Dependencies**: Run `npm install` to install all required dependencies for each repository separately.
 3. **Start the Development Server**: Run `npm run dev` to start the development server on `localhost:5173` for the frontend or `localhost:8000` for the backend.
 4. **Explore the Application**: Navigate through the application to explore its features.
+
+![Checkins Screenshot](./images/checkins.png)
+![Create a challenge Screenshot](./images/create-challenge.png)
+![Dashboard Screenshot #1](./images/dashboard1.png)
+![Dashboard Screenshot #2](./images/dashboard2.png)
+![Leadershipboard Screenshot](./images/leadershipboard.png)
+![Signin Screenshot](./images/signin.png)
+
 
 ### Environment Variables
 
