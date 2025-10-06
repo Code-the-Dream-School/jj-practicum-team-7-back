@@ -1,30 +1,124 @@
-# Back-End Repo for Node/React Practicum
+# PeerQuests: Front-End Repository
 
-This will be the API for the front-end React app part of your practicum project.
+This repository holds the backend source for the JJJ Practicum Team 7's application
+"PeerQuests".
 
-These instructions are for the **front-end team** so they can setup their local development environment to run 
-both the back-end server and their front-end app. You can go through these steps during your first group meeting 
-in case you need assistance from your mentors.
+This repository hosts the Back-End codebase responsible for handling API requests and connecting to the [React.js application](https://github.com/Code-the-Dream-School/jj-practicum-team-7-front).
 
->The back-end server will be running on port 8000. The front-end app will be running on port 3000. You will need to run both the back-end server and the front-end app at the same time to test your app.
+## Table of Contents
 
-### Setting up local development environment
+1. [Technologies Used](#technologies-used)
+2. [Key Features](#key-features)
+3. [Quick Start](#quick-start)
+4. [Authors](#authors)
 
-1. Create a folder to contain both the front-end and back-end repos 
-2. Clone this repository to that folder
-3. Run `npm install` to install dependencies
-4. Pull the latest version of the `main` branch (when needed)
-5. Run `npm run dev` to start the development server
-6. Open http://localhost:8000/api/v1/ with your browser to test.
-7. Your back-end server is now running. You can now run the front-end app.
+## Technologies Used
 
-#### Running the back-end server in Visual Studio Code
+Our back-end is powered by a robust set of tools and libraries, ensuring a scalable, secure, and efficient architecture:
 
-Note: In the below example, the group's front-end repository was named `bb-practicum-team1-front` and the back-end repository was named `bb-practicum-team-1-back`. Your repository will have a different name, but the rest should look the same.
-![vsc running](images/back-end-running-vsc.png)
+- **Core Frameworks:**
 
-#### Testing the back-end server API in the browser
+  - `Node.js` - JavaScript runtime for building fast and scalable server-side applications.
+  - `Express.js` - Lightweight and flexible web framework for building APIs and handling HTTP requests and routing.
 
-![browser server](images/back-end-running-browser.png)
+- **Database Management:**
 
->Update the .node-version file to match the version of Node.js the **team** is using. This is used by Render.com to [deploy the app](https://render.com/docs/node-version).
+  - `MongoDB` - NoSQL database for storing application data.
+  - `Mongoose` - Object Data Modeling (ODM) library for MongoDB, simplifying schema validation and database interactions.
+
+- **Security and Authentication:**
+
+  - `jsonwebtoken` - For generating JWT tokens.
+  - `bcryptjs` - For hashing and securing passwords.
+  - `cors` - Middleware for handling Cross-Origin Resource Sharing (CORS) in Express.js applications.
+  - `Passport` - Authentication middleware for handling various authentication strategies.
+
+- **API Documentation and Testing:**
+
+  - `Postman` - API testing tool used for developing, testing, and debugging endpoints.
+
+- **Development Tools:**
+
+  - `Nodemon` - Automatically restarts the server during development when file changes are detected.
+  - `ESLint` - A tool for identifying and fixing JavaScript code issues.
+  - `Prettier` - A code formatter to enforce consistent code styling.
+
+## Key Features
+
+### Challenges
+
+- **Create & Join Challenges**: Users can set personal goals and invite friends to participate.
+- **Daily Check-Ins & Invites**: Track progress daily and respond to new invitations.
+- **Manage Challenges**: Edit challenge details, send invites, or leave challenges with ease.
+
+### Competition and Progress
+
+- **Leaderboards**: View rankings within each challenge and across global standings.
+
+### Authentication
+
+- **Secure Sign-In**: Access the app quickly using email or Google authentication.
+
+### User Experience
+
+- **Responsive Interface**: Enjoy a smooth experience across desktop and mobile devices.
+
+![Checkins Screenshot](./images/checkins.png)
+![Create a challenge Screenshot](./images/create-challenge.png)
+![Dashboard Screenshot #1](./images/dashboard.png)
+![Dashboard Screenshot #2](./images/dashboard1.png)
+![Leadershipboard Screenshot](./images/leadershipboard.png)
+<img src="./images/signin.png" alt="Signin Screenshot" width="400"/>
+
+## Quick Start
+
+### Setup
+
+1. **Clone the Repository**: Create a folder to contain both the front-end and back-end repos. Clone this back-end and [our frontend](https://github.com/Code-the-Dream-School/jj-practicum-team-7-front) repositories to your local machine.
+2. **Install Dependencies**: Run `npm install` to install all required dependencies for each repository separately.
+3. **Start the Development Server**: Run `npm run dev` to start the development server on `localhost:5173` for the frontend or `localhost:8000` for the backend.
+4. **Explore the Application**: Navigate through the application to explore its features.
+
+### Environment Variables
+
+To properly run this application, you need to set up environment variables. This is done by creating a `.env` file in the root directory of the backend folder with the following variables:
+
+- **`MONGO_URI`**:  
+  This is the connection string for your MongoDB database.
+  ```bash
+  MONGODB_URI=mongodb://username:password@localhost:27017/database_name
+  ```
+
+- **`JWT_SECRET`**:  
+  This is the secret key used for signing JSON Web Tokens (JWT).
+  ```bash
+  JWT_SECRET=your_SECRET_key
+  ```
+
+- **`JWT_LIFETIME`**:  
+  This defines the lifetime of the JSON Web Token (JWT).
+  ```bash
+  JWT_LIFETIME=2h
+  ```
+- **`GOOGLE_CLIENT_ID`**:  
+  This defines the lifetime of the JSON Web Token (JWT).
+  ```bash
+  GOOGLE_CLIENT_ID=your_SECRET_key
+  ```
+- **`GOOGLE_CLIENT_SECRET`**:  
+  This defines the lifetime of the JSON Web Token (JWT).
+  ```bash
+  GOOGLE_CLIENT_SECRET=your_SECRET_key
+  ```
+- **`VITE_FRONTEND_URL`**:  
+  This defines the lifetime of the JSON Web Token (JWT).
+  ```bash
+  VITE_FRONTEND_URL=http://localhost:5173
+  ```
+
+## Authors
+
+- Darya Pogas
+- Romanna Bidnyk
+- Natalia Sirtak
+
